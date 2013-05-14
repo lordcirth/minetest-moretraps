@@ -3,8 +3,7 @@
 
 local MINE_DAMAGE=1 
 local MINE_VERTICAL_VELOCITY=5
-local MINE_COUNTDOWN=10			
-local COUNTING_DOWN=false		
+local REMOTE_COUNTDOWN_TIME=10		
 
 --register entities, tools & nodes
 
@@ -20,15 +19,18 @@ minetest.register_entity("bouncing_mine:bouncing_active_mine_entity", MINE_BOUNC
 
 minetest.register_node("bouncing_mine:bouncing_inactive_mine", {
 	description  = "Bouncing Mine",
-   	tile_images = {"mine_mine_top.png", "mine_mine_bottom.png",
-		"mine_mine_side.png", "mine_mine_side.png",
-		"mine_mine_side.png", "mine_mine_side.png",
-	},
+   	tiles = {
+        'mines_remote_inactive.png',
+    },
+	inventory_image  = "mines_remote_inactive.png",
 	on_punch = function (pos, node)						--on punch, make counting down true, which causes the inactive mine abm to begin counting down to mine activation
-        COUNTING_DOWN=true
+       local meta = minetest.env:get_meta(pos)
+        meta:set_int("Counting_Down", 1)
+		meta:set_int("Time_Until_Activation", REMOTE_COUNTDOWN_TIME)
     end,
-	inventory_image = minetest.inventorycube("mine_mine_top.png", "mine_mine_side.png", "mine_mine_side.png"),
-    groups = {cracky=2,oddly_breakable_by_hand=5,flammable=1,explody=9},
+	paramtype = "light",
+	inventory_image = "mines_remote_inactive.png",
+    groups = {cracky=2,oddly_breakable_by_hand=5,flammable=3,explody=9},
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -40,12 +42,13 @@ minetest.register_node("bouncing_mine:bouncing_inactive_mine", {
 })
 
 minetest.register_node("bouncing_mine:bouncing_active_mine", {
-   	tile_images = {"mine_mine_top.png", "mine_mine_bottom.png",
+   	tiles = {"mine_mine_top.png", "mine_mine_bottom.png",
 		"mine_mine_side.png", "mine_mine_side.png",
 		"mine_mine_side.png", "mine_mine_side.png",
 	},
-	inventory_image = minetest.inventorycube("mine_mine_top.png", "mine_mine_side.png", "mine_mine_side.png"),
-    groups = {cracky=2,oddly_breakable_by_hand=5,flammable=1,explody=9},
+	paramtype = "light",
+	inventory_image  = "mines_remote_inactive.png",
+    groups = {cracky=2,oddly_breakable_by_hand=5,flammable=3,explody=9},
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -84,20 +87,21 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		if COUNTING_DOWN == true then
-			if MINE_COUNTDOWN<=0 then
-				COUNTING_DOWN=false
-				MINE_COUNTDOWN=10
+	local meta = minetest.env:get_meta(pos)
+		print ("[mine] counting down = "..meta:get_int("Counting_Down").."")
+		print ("[mine] mine countdown = "..meta:get_int("Time_Until_Activation").."")
+		if meta:get_int("Counting_Down") == 1 then
+			if meta:get_int("Time_Until_Activation")>0 then
+				
+				meta:set_int("Time_Until_Activation", meta:get_int("Time_Until_Activation")-1)
+			else
 				local node = minetest.env:get_node(pos)
 				node.name = ("bouncing_mine:bouncing_active_mine")
 				print ("placing active mine node")
 				minetest.env:add_node(pos,node)
-			else
-				print ("[mine] mine countdown = "..MINE_COUNTDOWN.."")
-				MINE_COUNTDOWN=MINE_COUNTDOWN-1
 			end
 		end
-	end
+	end,
 })
 
 
@@ -140,8 +144,8 @@ end
 minetest.register_craft({
 	output = '"bouncing_mine:bouncing_inactive_mine" 99',
 	recipe = {
-		{'', '', ''},
-		{'', 'default:coal_lump', ''},
+		{'', 'normal_mine:normal_inactive_mine', ''},
+		{'', 'normal_mine:normal_inactive_mine', ''},
 		{'', '', ''},
 	}
 })

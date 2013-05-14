@@ -1,20 +1,21 @@
 --Remote Mine Mod
+MINE_REMOTE_ACTIVE=false
+local REMOTE_ACTIVATION_TIME=2
 local MINE_DAMAGE=1
 local MINE_VERTICAL_VELOCITY=5
-local MINE_ACTIVE=false
 local NORMAL_MINE_REMOTE_POSITION_X=0
 local NORMAL_MINE_REMOTE_POSITION_Y=0
 local NORMAL_MINE_REMOTE_POSITION_Z=0
-local NORMAL_MINE_REMOTE_DETECTION_RADIUS=30
+MINE_REMOTE_DETECTION_RADIUS=30
 --register entities, tools & nodes
 minetest.register_node("remote_normal_mine:remote_normal_mine", {
 	description  = "Remote Mine",
-   	tile_images = {"mine_mine_top.png", "mine_mine_bottom.png",
-		"mine_mine_side.png", "mine_mine_side.png",
-		"mine_mine_side.png", "mine_mine_side.png",
-	},
-	inventory_image = minetest.inventorycube("mine_mine_top.png", "mine_mine_side.png", "mine_mine_side.png"),
-   	groups = {cracky=2,oddly_breakable_by_hand=5,flammable=1,explody=9},
+   	tiles = {
+        'mines_remote_inactive.png',
+    },
+	paramtype = "light",
+	inventory_image = "mines_remote_inactive.png",
+   	groups = {cracky=7,oddly_breakable_by_hand=9,flammable=3,explody=0},
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -26,9 +27,12 @@ minetest.register_node("remote_normal_mine:remote_normal_mine", {
 })
 minetest.register_node("remote_normal_mine:active_remote", {
 	description  = "Mine Remote",
+	groups = {cracky=7,oddly_breakable_by_hand=9,flammable=0,explody=0},
+	paramtype = "light",
 	inventory_image  = "remote.png",
-	tiles = {"mines_remote_active.png"},
-	drawtype = "nodebox",
+	tiles = {
+        'mines_remote_inactive.png',
+    },
 	node_box = {
 		type = "fixed",
 		fixed = {
@@ -37,21 +41,14 @@ minetest.register_node("remote_normal_mine:active_remote", {
 		{-.05,.25,-.05,.05,.5,.05},
 		}
 	},
-	on_punch=function(pos)
-		print ("remote normal mine is deactivated by remote")
-		NORMAL_MINE_REMOTE_POSITION_X=pos.x
-		NORMAL_MINE_REMOTE_POSITION_Y=pos.y
-		NORMAL_MINE_REMOTE_POSITION_Z=pos.z
-		MINE_ACTIVE = false
-		local node = minetest.env:get_node(pos)
-		node.name = ("remote_normal_mine:inactive_remote")
-		minetest.env:add_node(pos,node)
-      end,
 })
 minetest.register_node("remote_normal_mine:inactive_remote", {
 	description  = "Mine Remote",
-	inventory_image  = "remote.png",
-	tiles = {"mines_remote_active.png"},
+	paramtype = "light",
+	inventory_image  = "mines_remote_inactive.png",
+	tiles = {
+        'mines_remote_inactive.png',
+    },
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -66,22 +63,49 @@ minetest.register_node("remote_normal_mine:inactive_remote", {
 		NORMAL_MINE_REMOTE_POSITION_X=pos.x
 		NORMAL_MINE_REMOTE_POSITION_Y=pos.y
 		NORMAL_MINE_REMOTE_POSITION_Z=pos.z
-		MINE_ACTIVE = true
+		MINE_REMOTE_ACTIVE = true
 		local node = minetest.env:get_node(pos)
 		node.name = ("remote_normal_mine:active_remote")
 		minetest.env:add_node(pos,node)
       end,
 })
+
 --ABM's
+
+minetest.register_abm({
+	nodenames = {"remote_normal_mine:active_remote"},
+	interval = 1,
+	chance = 1,
+	action = function(pos)
+		local ORIGINAL_REMOTE_ACTIVATION_TIME = REMOTE_ACTIVATION_TIME
+		if REMOTE_ACTIVATION_TIME <= 0 then
+			print ("remote normal mine is deactivated by remote")
+			NORMAL_MINE_REMOTE_POSITION_X=pos.x
+			NORMAL_MINE_REMOTE_POSITION_Y=pos.y
+			NORMAL_MINE_REMOTE_POSITION_Z=pos.z
+			MINE_REMOTE_ACTIVE = false
+			local node = minetest.env:get_node(pos)
+			node.name = ("remote_normal_mine:inactive_remote")
+			minetest.env:add_node(pos,node)
+			REMOTE_ACTIVATION_TIME=ORIGINAL_REMOTE_ACTIVATION_TIME
+		else
+			REMOTE_ACTIVATION_TIME=REMOTE_ACTIVATION_TIME-1
+		end
+	end,
+})
+
 minetest.register_abm({
 	nodenames = {"remote_normal_mine:remote_normal_mine"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		if MINE_ACTIVE==true then
-			if NORMAL_MINE_REMOTE_POSITION_X >= (pos.x - NORMAL_MINE_REMOTE_DETECTION_RADIUS) and NORMAL_MINE_REMOTE_POSITION_X <= (pos.x + NORMAL_MINE_REMOTE_DETECTION_RADIUS) then
-				if NORMAL_MINE_REMOTE_POSITION_Y >= (pos.y - NORMAL_MINE_REMOTE_DETECTION_RADIUS) and NORMAL_MINE_REMOTE_POSITION_Y <= (pos.y + NORMAL_MINE_REMOTE_DETECTION_RADIUS) then
-					if NORMAL_MINE_REMOTE_POSITION_Z >= (pos.z - NORMAL_MINE_REMOTE_DETECTION_RADIUS) and NORMAL_MINE_REMOTE_POSITION_Z <= (pos.z + NORMAL_MINE_REMOTE_DETECTION_RADIUS) then
+		if MINE_REMOTE_ACTIVE==true then
+		print("mine remote(normal)= active")
+		end
+		if MINE_REMOTE_ACTIVE==true then
+			if NORMAL_MINE_REMOTE_POSITION_X >= (pos.x - MINE_REMOTE_DETECTION_RADIUS) and NORMAL_MINE_REMOTE_POSITION_X <= (pos.x + MINE_REMOTE_DETECTION_RADIUS) then
+				if NORMAL_MINE_REMOTE_POSITION_Y >= (pos.y - MINE_REMOTE_DETECTION_RADIUS) and NORMAL_MINE_REMOTE_POSITION_Y <= (pos.y + MINE_REMOTE_DETECTION_RADIUS) then
+					if NORMAL_MINE_REMOTE_POSITION_Z >= (pos.z - MINE_REMOTE_DETECTION_RADIUS) and NORMAL_MINE_REMOTE_POSITION_Z <= (pos.z + MINE_REMOTE_DETECTION_RADIUS) then
 						print ("normal mine remotely activated and exploding")
 						local objs5 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)	--gets the objects within a specific radius and assigns them different names
 						local objs4 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 4)
@@ -115,16 +139,16 @@ minetest.register_abm({
 minetest.register_craft({
 	output = '"remote_normal_mine:remote_normal_mine" 99',
 	recipe = {
-		{'', 'default:coal_lump', ''},
-		{'default:coal_lump', 'default:coal_lump', ''},
+		{'', 'default:stick', ''},
+		{'', 'normal_mine:normal_inactive_mine', ''},
 		{'', '', ''},
 	}
 })
 minetest.register_craft({
 	output = '"remote_normal_mine:inactive_remote" 1',
 	recipe = {
-		{'default:coal_lump', 'default:coal_lump', 'default:coal_lump'},
 		{'', '', ''},
-		{'', '', ''},
+		{'default:steel_ingot', 'default:steel_ingot', 'default:steel_ingot'},
+		{'default:steel_ingot', 'default:steel_ingot', 'default:steel_ingot'},
 	}
 })

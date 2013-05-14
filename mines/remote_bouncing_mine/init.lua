@@ -3,11 +3,9 @@
 
 local MINE_DAMAGE=1 			--the minimum mine damage
 local MINE_VERTICAL_VELOCITY=5	--the speed the mine travels vertically on detonation
-local MINE_ACTIVE=false
 local BOUNCING_MINE_REMOTE_POSITION_X=0
 local BOUNCING_MINE_REMOTE_POSITION_Y=0
 local BOUNCING_MINE_REMOTE_POSITION_Z=0
-local BOUNCING_MINE_REMOTE_DETECTION_RADIUS=5
 
 --register entities, tools & nodes
 
@@ -20,15 +18,14 @@ MINE_REMOTE_BOUNCING_MINE_ENTITY={
 }
 
 minetest.register_entity("remote_bouncing_mine:remote_bouncing_mine_entity", MINE_REMOTE_BOUNCING_MINE_ENTITY)
-
 minetest.register_node("remote_bouncing_mine:remote_bouncing_mine", {
 	description  = "Remote Bouncing Mine",
-   	tile_images = {"mine_mine_top.png", "mine_mine_bottom.png",
-		"mine_mine_side.png", "mine_mine_side.png",
-		"mine_mine_side.png", "mine_mine_side.png",
-	},
-	inventory_image = minetest.inventorycube("mine_mine_top.png", "mine_mine_side.png", "mine_mine_side.png"),
-    groups = {cracky=2,oddly_breakable_by_hand=5,flammable=1,explody=9},
+   	tiles = {
+        'mines_remote_inactive.png',
+    },
+	paramtype = "light",
+	inventory_image  = "mines_remote_inactive.png",
+    groups = {cracky=2,oddly_breakable_by_hand=5,flammable=3,explody=9},
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -40,57 +37,6 @@ minetest.register_node("remote_bouncing_mine:remote_bouncing_mine", {
 	},
 })
 
-minetest.register_node("remote_bouncing_mine:active_remote", {
-	description  = "Bouncing Mine Remote",
-	inventory_image  = "remote.png",
-	tiles = {"mines_remote_active.png"},
-	drawtype = "nodebox",
-	node_box = {
-		type = "fixed",
-		fixed = {
-		{-.5,-.5,-.5,.5,.25,.5},
-		{-.4,.25,-.4,.4,.3,.4},
-		{-.05,.25,-.05,.05,.5,.05},
-		}
-	},
-	on_punch=function(pos)
-		print ("remote bouncing mine is deactivated by remote")
-		BOUNCING_MINE_REMOTE_POSITION_X=pos.x
-		BOUNCING_MINE_REMOTE_POSITION_Y=pos.y
-		BOUNCING_MINE_REMOTE_POSITION_Z=pos.z
-		MINE_ACTIVE = false
-		local node = minetest.env:get_node(pos)
-		node.name = ("remote_normal_mine:inactive_remote")
-		minetest.env:add_node(pos,node)
-      end,
-})
-
-minetest.register_node("remote_bouncing_mine:inactive_remote", {
-	description  = "Bouncing Mine Remote",
-	inventory_image  = "remote.png",
-	tiles = {"mines_remote_inactive.png"},
-	drawtype = "nodebox",
-	node_box = {
-		type = "fixed",
-		fixed = {
-		{-.5,-.5,-.5,.5,.25,.5},
-		{-.4,.25,-.4,.4,.3,.4},
-		{-.05,.25,-.05,.05,.5,.05},
-		}
-	},
-	on_punch=function(pos)
-		print ("remote bouncing mine is activated by remote")
-		BOUNCING_MINE_REMOTE_POSITION_X=pos.x
-		BOUNCING_MINE_REMOTE_POSITION_Y=pos.y
-		BOUNCING_MINE_REMOTE_POSITION_Z=pos.z
-		MINE_ACTIVE = true
-		print("x="..BOUNCING_MINE_REMOTE_POSITION_X)
-		local node = minetest.env:get_node(pos)
-		node.name = ("remote_normal_mine:active_remote")
-		minetest.env:add_node(pos,node)
-      end,
-})
-
 --ABM's
 
 minetest.register_abm({
@@ -98,10 +44,13 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		if MINE_ACTIVE==true then
-			if BOUNCING_MINE_REMOTE_POSITION_X >= (pos.x - BOUNCING_MINE_REMOTE_DETECTION_RADIUS) and BOUNCING_MINE_REMOTE_POSITION_X <= (pos.x + BOUNCING_MINE_REMOTE_DETECTION_RADIUS) then
-				if BOUNCING_MINE_REMOTE_POSITION_Y >= (pos.y - BOUNCING_MINE_REMOTE_DETECTION_RADIUS) and BOUNCING_MINE_REMOTE_POSITION_Y <= (pos.y + BOUNCING_MINE_REMOTE_DETECTION_RADIUS) then
-					if BOUNCING_MINE_REMOTE_POSITION_Z >= (pos.z - BOUNCING_MINE_REMOTE_DETECTION_RADIUS) and BOUNCING_MINE_REMOTE_POSITION_Z <= (pos.z + BOUNCING_MINE_REMOTE_DETECTION_RADIUS) then
+		if MINE_REMOTE_ACTIVE==true then
+		print("mine remote(bouncing)= active")
+		end
+		if MINE_REMOTE_ACTIVE==true then
+			if BOUNCING_MINE_REMOTE_POSITION_X >= (pos.x - MINE_REMOTE_DETECTION_RADIUS) and BOUNCING_MINE_REMOTE_POSITION_X <= (pos.x + MINE_REMOTE_DETECTION_RADIUS) then
+				if BOUNCING_MINE_REMOTE_POSITION_Y >= (pos.y - MINE_REMOTE_DETECTION_RADIUS) and BOUNCING_MINE_REMOTE_POSITION_Y <= (pos.y + MINE_REMOTE_DETECTION_RADIUS) then
+					if BOUNCING_MINE_REMOTE_POSITION_Z >= (pos.z - MINE_REMOTE_DETECTION_RADIUS) and BOUNCING_MINE_REMOTE_POSITION_Z <= (pos.z + MINE_REMOTE_DETECTION_RADIUS) then
 					local node = minetest.env:get_node(pos)
 					local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)           --get the objects within 5 blocks								 		  --if there are 2 entities in the radius(1 for the mine and one for the target) then
 							if minetest.env:get_node({x=pos.x,y=pos.y+1,z=pos.z}).name ~= air then	 	 --if the block 1 space above is not air, remove it
@@ -159,17 +108,10 @@ end
 minetest.register_craft({
 	output = '"remote_bouncing_mine:remote_bouncing_mine" 99',
 	recipe = {
-		{'', 'default:coal_lump', 'default:coal_lump'},
-		{'', 'default:coal_lump', ''},
+		{'', 'default:stick', ''},
+		{'', 'bouncing_mine:bouncing_inactive_mine', ''},
 		{'', '', ''},
 	}
 })
 
-minetest.register_craft({
-	output = '"remote_bouncing_mine:inactive_remote" 1',
-	recipe = {
-		{'', 'default:steel_ingot', ''},
-		{'default:steel_ingot', 'default:steel_ingot', ''},
-		{'default:steel_ingot', 'default:steel_ingot', ''},
-	}
-})
+
