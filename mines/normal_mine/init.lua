@@ -112,53 +112,22 @@ minetest.register_abm({
 })
 
 check_if_path_clear = function (pos)
-	local player_distance=4 --TODO - make this calculate the players distance
-	local distance_scanning=1.5
-	if player_pos.x<0 then
-		x_ratio = 1
-		y_ratio = (player_pos.y-pos.y)/(player_pos.x-pos.x)
-		z_ratio = (player_pos.z-pos.z)/(player_pos.x-pos.x)
-	else
-		x_ratio = -1
-		y_ratio = (player_pos.y-pos.y)/-(player_pos.x-pos.x)
-		z_ratio = (player_pos.z-pos.z)/-(player_pos.x-pos.x)
-	end
+	local distance_scanning = 1
+	local player_pos_x=player_pos.x-pos.x
+	local player_pos_y=player_pos.y-pos.y
+	local player_pos_z=player_pos.z-pos.z
 	print ("x,y,z ratios="..x_ratio.." "..y_ratio.." "..z_ratio.."")
 	print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
-	if minetest.env:get_node({x=x_ratio*distance_scanning,y=y_ratio*distance_scanning,z=z_ratio*distance_scanning}).name == air then
-		if distance_scanning<player_distance then
-			distance_scanning=distance_scanning+.1
+	if minetest.env:get_node({x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}).name == air or minetest.env:get_node({x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z})
+		if distance_scanning>.2 then
+			distance_scanning=distance_scanning-.1
 			print ("distance_scanning = "..distance_scanning)
 		else
 			return true
 		end
+	else
+		return false
 	end
-	--[[
-	print ("no node.5")
-		if minetest.env:get_node({x=x_ratio*1,y=y_ratio*1,z=z_ratio*1}).name == air then
-		print ("no node 1")
-			if minetest.env:get_node({x=x_ratio*1.5,y=y_ratio*1.5,z=z_ratio*1.5}).name == air then
-			print ("no node 1.5")
-				if minetest.env:get_node({x=x_ratio*2,y=y_ratio*2,z=z_ratio*2}).name == air then
-				print ("no node 2")
-					if minetest.env:get_node({x=x_ratio*2.5,y=y_ratio*2.5,z=z_ratio*2.5}).name == air then
-					print ("no node 2.5")
-						if minetest.env:get_node({x=x_ratio*3,y=y_ratio*3,z=z_ratio*3}).name == air then
-						print ("no node 3")
-							if minetest.env:get_node({x=x_ratio*3.5,y=y_ratio*3.5,z=z_ratio*3.5}).name == air then
-							print ("no node 3.5")
-								if minetest.env:get_node({x=x_ratio*4,y=y_ratio*4,z=z_ratio*4}).name == air then
-								print ("no node 4")
-									return true
-								end	
-							end
-						end
-					end
-				end
-			end
-		end
-		--]]
-end
 
 --crafting recipies	
 
