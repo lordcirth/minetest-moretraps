@@ -5,8 +5,13 @@ local MINE_DAMAGE=1
 local MINE_VERTICAL_VELOCITY=5	
 local IS_LOCAL_MINE_COUNTDOWN_NIL = true
 local REMOTE_COUNTDOWN_TIME = 10
+local is_path_clear = false
 
 --register entities & nodes
+
+minetest.register_craftitem("normal_mine:gunpowder", {
+	inventory_image = "throwing_string.png",
+})
 
 minetest.register_node("normal_mine:normal_inactive_mine", {
 	description  = "Mine",
@@ -57,6 +62,7 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos)
+			
 			local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)           --get the objects within 5 blocks
 				for k, obj in pairs(objs) do									 		  --if there are 2 entities in the radius(1 for the mine and one for the target) then
 					local objs5 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)	--gets the objects within a specific radius and assigns them different names
@@ -64,8 +70,8 @@ minetest.register_abm({
 					local objs3 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 3)
 					local objs2 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 2)	
 						for k, obj in pairs(objs5) do
-							player_pos = obj:getpos()
-							if check_if_path_clear(pos) then 
+							if check_if_path_clear(pos)~=false then
+							print ("causing damage")
 							obj:set_hp(obj:get_hp()-MINE_DAMAGE)							--remove health from the objects within each of the different distances from the mine
 							for k, obj in pairs(objs4) do									--the closer the object is to the mine, the more times health gets removed, so if the object is within 2 blocks, it
 								obj:set_hp(obj:get_hp()-MINE_DAMAGE)						--would get 4*MINE_DAMAGE health removed, because it is within the 5,4,3,and 2 radius zones
@@ -77,15 +83,14 @@ minetest.register_abm({
 								end
 							end
 						end
-						end
-						for k, obj in pairs(objs5) do
+					end
+					for k, obj in pairs(objs5) do
 						if obj:get_hp()<=0 then 
 							obj:remove()
 						end
-						end
-						local obj=minetest.env:dig_node(pos)
 					end
-
+					local obj=minetest.env:dig_node(pos)
+				end
 		end,
 })
 
@@ -93,7 +98,8 @@ minetest.register_abm({
 	nodenames = {"normal_mine:normal_inactive_mine"},
 	interval = 1,
 	chance = 1,
-	action = function(pos, player_pos)
+	action = function(pos)
+
 		local meta = minetest.env:get_meta(pos)
 		print ("[mine] counting down = "..meta:get_int("Counting_Down").."")
 		print ("[mine] mine countdown = "..meta:get_int("Time_Until_Activation").."")
@@ -112,30 +118,61 @@ minetest.register_abm({
 })
 
 check_if_path_clear = function (pos)
+		local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)
+		for k, obj in pairs(objs) do
+			player_pos = obj:getpos()
+		end
+		if player_pos~=0 then
+	local scanning = true
 	local distance_scanning = 1
 	local player_pos_x=player_pos.x-pos.x
 	local player_pos_y=player_pos.y-pos.y
 	local player_pos_z=player_pos.z-pos.z
-	print ("x,y,z ratios="..x_ratio.." "..y_ratio.." "..z_ratio.."")
-	print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
-	if minetest.env:get_node({x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}).name == air or minetest.env:get_node({x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z})
-		if distance_scanning>.2 then
-			distance_scanning=distance_scanning-.1
-			print ("distance_scanning = "..distance_scanning)
+	local node_being_scanned = {x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}
+	while distance_scanning > .1 and scanning == true do
+		if minetest.env:get_node(node_being_scanned).name == "air" or minetest.env:get_node(node_being_scanned).name == "normal_active_mine" then
+			print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
+			if distance_scanning > .2 then
+				print ("distance_scanning = "..distance_scanning)
+				distance_scanning=distance_scanning-.1
+				local node_being_scanned = {x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}
+				print ("node = "..minetest.env:get_node(node_being_scanned).name.."")
+			else
+				print ("path is clear")
+				scanning = false
+				return true
+
+			end
 		else
-			return true
+			print ("player is blocked")
+			print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
+			print ("node x,y,z = "..player_pos_x*distance_scanning + pos.x.." "..player_pos_y*distance_scanning + pos.y.." "..player_pos_z*distance_scanning + pos.z.."")
+			print ("node = "..minetest.env:get_node(node_being_scanned).name.."")
+			scanning = false
+			return false
 		end
-	else
-		return false
 	end
+	end
+end
+
 
 --crafting recipies	
 
 minetest.register_craft({
-	output = '"normal_mine:normal_inactive_mine" 99',
+	output = '"normal_mine:normal_inactive_mine" 4',
 	recipe = {
-		{'', 'default:coal_lump', ''},
-		{'', 'default:coal_lump', ''},
-		{'', 'default:coal_lump', ''},
+		{'', 'default:steel_ingot', ''},
+		{'default:steel_ingot', 'normal_mine:gunpowder', 'default:steel_ingot'},
+		{'', 'default:steel_ingot', ''},
 	}
 })
+
+minetest.register_craft({
+	output = '"normal_mine:gunpowder" 4',
+	recipe = {
+		{'', 'default:gravel', ''},
+		{'default:gravel', 'default:coal_lump', 'default:gravel'},
+		{'', 'default:gravel', ''},
+	}
+})
+

@@ -142,10 +142,10 @@ end
 --crafting recipies	
 
 minetest.register_craft({
-	output = '"bouncing_mine:bouncing_inactive_mine" 99',
+	output = '"bouncing_mine:bouncing_inactive_mine" 1',
 	recipe = {
 		{'', 'normal_mine:normal_inactive_mine', ''},
-		{'', 'normal_mine:normal_inactive_mine', ''},
+		{'', 'normal_mine:gunpowder', ''},
 		{'', '', ''},
 	}
 })

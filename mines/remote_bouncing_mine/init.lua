@@ -106,7 +106,7 @@ end
 --crafting recipes	
 
 minetest.register_craft({
-	output = '"remote_bouncing_mine:remote_bouncing_mine" 99',
+	output = '"remote_bouncing_mine:remote_bouncing_mine" 1',
 	recipe = {
 		{'', 'default:stick', ''},
 		{'', 'bouncing_mine:bouncing_inactive_mine', ''},

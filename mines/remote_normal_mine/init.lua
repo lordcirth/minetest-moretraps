@@ -147,8 +147,8 @@ minetest.register_craft({
 minetest.register_craft({
 	output = '"remote_normal_mine:inactive_remote" 1',
 	recipe = {
-		{'', '', ''},
-		{'default:steel_ingot', 'default:steel_ingot', 'default:steel_ingot'},
+		{'', 'default:stick', ''},
+		{'default:steel_ingot', 'default:mese_crystal', 'default:steel_ingot'},
 		{'default:steel_ingot', 'default:steel_ingot', 'default:steel_ingot'},
 	}
 })
