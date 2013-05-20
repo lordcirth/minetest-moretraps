@@ -112,6 +112,8 @@ minetest.register_abm({
 						local objs3 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 3)
 						local objs2 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 2)
 						for k, obj in pairs(objs5) do
+						local player_pos = obj:getpos()
+                            if check_if_path_clear(pos, player_pos, remote_normal_mine:remote_normal_mine) == true then
 						obj:set_hp(obj:get_hp()-MINE_DAMAGE)
 							for k, obj in pairs(objs4) do
 							obj:set_hp(obj:get_hp()-MINE_DAMAGE)
@@ -130,6 +132,7 @@ minetest.register_abm({
 						end
 						minetest.env:remove_node({x=pos.x,y=pos.y,z=pos.z})
 					end
+				end
 				end
 			end
 		end

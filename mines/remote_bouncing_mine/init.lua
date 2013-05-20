@@ -82,6 +82,8 @@ MINE_REMOTE_BOUNCING_MINE_ENTITY.on_step = function(self, dtime)
 		if self.timer>0.5 then												--if the entity has existed for more than .5 seconds(giving it time to move a couple blocks up into the air) then
 			print ("mine entity causing damage")
 			for k, obj in pairs(objs5) do
+			local player_pos = obj:getpos()
+                            if check_if_path_clear(pos, player_pos, air) == true then
 				obj:set_hp(obj:get_hp()-MINE_DAMAGE)							--remove health from the objects within each of the different distances from the mine
 				for k, obj in pairs(objs4) do									--the closer the object is to the mine, the more times health gets removed, so if the object is within 2 blocks, it
 					obj:set_hp(obj:get_hp()-MINE_DAMAGE)						--would get 4*MINE_DAMAGE health removed, because it is within the 5,4,3,and 2 radius zones
@@ -90,6 +92,7 @@ MINE_REMOTE_BOUNCING_MINE_ENTITY.on_step = function(self, dtime)
 						for k, obj in pairs(objs2) do
 							obj:set_hp(obj:get_hp()-MINE_DAMAGE)
 						end
+					end
 					end
 				end
 			end

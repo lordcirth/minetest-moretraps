@@ -60,7 +60,7 @@ minetest.register_abm({
                     local objs2 = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 2)
                         for k, obj in pairs(objs5) do
                             local player_pos = obj:getpos()
-                            if check_if_path_clear(pos, player_pos) == true then
+                            if check_if_path_clear(pos, player_pos, normal_mine:normal_active_mine) == true then
                             print ("causing damage")
                             obj:set_hp(obj:get_hp()-MINE_DAMAGE)                            --remove health from the objects within each of the different distances from the mine
                             for k, obj in pairs(objs4) do                                   --the closer the object is to the mine, the more times health gets removed, so if the object is within 2 blocks, it
@@ -104,7 +104,8 @@ minetest.register_abm({
         end
     end,
 })
-check_if_path_clear = function (pos, player_pos)
+check_if_path_clear = function (pos, player_pos, node_name)
+	local node_name = node_name
 	local scanning = true
     local player_pos=player_pos
     local distance_scanning = 1
@@ -113,7 +114,7 @@ check_if_path_clear = function (pos, player_pos)
     local player_pos_z=player_pos.z-pos.z
     while distance_scanning > .1 and scanning==true do
 		  local node_being_scanned = {x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}
-        if minetest.env:get_node(node_being_scanned).name == "air" or minetest.env:get_node(node_being_scanned).name == "normal_mine:normal_active_mine" then
+        if minetest.env:get_node(node_being_scanned).name == "air" or minetest.env:get_node(node_being_scanned).name == "node_name" then
             print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
             if distance_scanning > .2 then
                 print ("distance_scanning = "..distance_scanning)
