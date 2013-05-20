@@ -1,12 +1,8 @@
-
 --Bouncing Mine Mod
-
 local MINE_DAMAGE=1 
 local MINE_VERTICAL_VELOCITY=5
 local REMOTE_COUNTDOWN_TIME=10		
-
 --register entities, tools & nodes
-
 MINE_BOUNCING_ACTIVE_MINE_ENTITY={
 	physical = false,
 	timer=0,
@@ -14,9 +10,7 @@ MINE_BOUNCING_ACTIVE_MINE_ENTITY={
 	lastpos={},
 	collisionbox = {0,0,0,0,0,0},
 }
-
 minetest.register_entity("bouncing_mine:bouncing_active_mine_entity", MINE_BOUNCING_ACTIVE_MINE_ENTITY)
-
 minetest.register_node("bouncing_mine:bouncing_inactive_mine", {
 	description  = "Bouncing Mine",
    	tiles = {
@@ -40,7 +34,6 @@ minetest.register_node("bouncing_mine:bouncing_inactive_mine", {
 		}
 	},
 })
-
 minetest.register_node("bouncing_mine:bouncing_active_mine", {
    	tiles = {"mine_mine_top.png", "mine_mine_bottom.png",
 		"mine_mine_side.png", "mine_mine_side.png",
@@ -58,9 +51,7 @@ minetest.register_node("bouncing_mine:bouncing_active_mine", {
 		}
 		},
 })
-
 --ABM's
-
 minetest.register_abm({
 	nodenames = {"bouncing_mine:bouncing_active_mine"},
 	interval = 1,
@@ -81,7 +72,6 @@ minetest.register_abm({
 		end	
 	end,
 })
-
 minetest.register_abm({
 	nodenames = {"bouncing_mine:bouncing_inactive_mine"},
 	interval = 1,
@@ -103,8 +93,6 @@ minetest.register_abm({
 		end
 	end,
 })
-
-
 MINE_BOUNCING_ACTIVE_MINE_ENTITY.on_step = function(self, dtime)
 	self.timer=self.timer+dtime
 	MINE_VERTICAL_VELOCITY=(.4-self.timer)*10
@@ -140,7 +128,6 @@ MINE_BOUNCING_ACTIVE_MINE_ENTITY.on_step = function(self, dtime)
 end
 	
 --crafting recipies	
-
 minetest.register_craft({
 	output = '"bouncing_mine:bouncing_inactive_mine" 1',
 	recipe = {
@@ -149,5 +136,4 @@ minetest.register_craft({
 		{'', '', ''},
 	}
 })
-
 print ("[mines] loaded!")
