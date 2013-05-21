@@ -107,7 +107,7 @@ MINE_BOUNCING_ACTIVE_MINE_ENTITY.on_step = function(self, dtime)
 		print ("mine entity causing damage")
 			for k, obj in pairs(objs5) do
 				local player_pos = obj:getpos()
-                            if check_if_path_clear(pos, player_pos, air) == true then
+                if check_if_path_clear2(pos, player_pos) == true and obj:get_player_name()~="" then--this makes it only damage players, not other entities(if the object is an entity, the name will be "")
 				obj:set_hp(obj:get_hp()-MINE_DAMAGE)							--remove health from the objects within each of the different distances from the mine
 				for k, obj in pairs(objs4) do									--the closer the object is to the mine, the more times health gets removed, so if the object is within 2 blocks, it
 					obj:set_hp(obj:get_hp()-MINE_DAMAGE)						--would get 4*MINE_DAMAGE health removed, because it is within the 5,4,3,and 2 radius zones
@@ -129,7 +129,37 @@ MINE_BOUNCING_ACTIVE_MINE_ENTITY.on_step = function(self, dtime)
 		end
 	end
 end
-	
+check_if_path_clear2 = function (pos, player_pos)
+	local scanning = true
+    local player_pos=player_pos
+    local distance_scanning = 1
+    local player_pos_x=player_pos.x-pos.x
+    local player_pos_y=player_pos.y-pos.y
+    local player_pos_z=player_pos.z-pos.z
+    while  scanning==true do
+		  local node_being_scanned = {x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}
+        if minetest.env:get_node(node_being_scanned).name == "air" or minetest.env:get_node(node_being_scanned).name == "bouncing_mine:bouncing_active_mine" then
+            print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
+            if distance_scanning > .2 then
+                print ("distance_scanning = "..distance_scanning)
+                distance_scanning=distance_scanning-.1
+                local node_being_scanned = {x=player_pos_x*distance_scanning + pos.x,y=player_pos_y*distance_scanning + pos.y,z=player_pos_z*distance_scanning + pos.z}
+                print ("node = "..minetest.env:get_node(node_being_scanned).name.."")
+            else
+                print ("path is clear")
+				scanning=false
+                return true
+            end
+        else
+            print ("player is blocked")
+            print ("player x,y,z="..pos.x - player_pos.x.." "..pos.y - player_pos.y.." "..pos.z - player_pos.z.."")
+            print ("node x,y,z = "..player_pos_x*distance_scanning + pos.x.." "..player_pos_y*distance_scanning + pos.y.." "..player_pos_z*distance_scanning + pos.z.."")
+            print ("node = "..minetest.env:get_node(node_being_scanned).name.."")
+			scanning=false
+            return false
+        end
+    end
+end
 --crafting recipies	
 minetest.register_craft({
 	output = '"bouncing_mine:bouncing_inactive_mine" 1',
