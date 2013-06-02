@@ -1,23 +1,21 @@
 --Mine Mod
-local MINE_DAMAGE=1
-local MINE_VERTICAL_VELOCITY=5
-local IS_LOCAL_MINE_COUNTDOWN_NIL = true
-local COUNTDOWN_TIME = 10
-local is_path_clear = false
+
+local countdown_time = 10
+
 --register entities & nodes
 minetest.register_craftitem("normal_mine:gunpowder", {
     inventory_image = "throwing_string.png",
 })
 minetest.register_node("normal_mine:mine", {
     description  = "Mine",
-    tiles = {"inactive_mine_top.png", "inactive_mine_bottom.png",
-        "inactive_mine_side.png", "inactive_mine_side.png",
-        "inactive_mine_side.png", "inactive_mine_side.png",
+    tiles = {"inactive_top.png", "inactive_bottom.png",
+        "inactive_side.png", "inactive_side.png",
+        "inactive_side.png", "inactive_side.png",
     },
     on_punch = function (pos, node)                     --on punch, make counting down true, which causes the inactive mine abm to begin counting down to mine activation
         local meta = minetest.env:get_meta(pos)
         meta:set_int("Counting_Down", 1)
-        meta:set_int("Time_Until_Activation", COUNTDOWN_TIME)
+        meta:set_int("Time_Until_Activation", countdown_time)
     end,
     paramtype = "light",
     inventory_image  = "inventory_image.png",
@@ -31,9 +29,9 @@ minetest.register_node("normal_mine:mine", {
     },
 })
 minetest.register_node("normal_mine:active_mine", {
-    tiles = {"active_mine_top.png", "active_mine_bottom.png",
-        "active_mine_side.png", "active_mine_side.png",
-        "active_mine_side.png", "active_mine_side.png",
+    tiles = {"active_top.png", "active_bottom.png",
+        "active_side.png", "active_side.png",
+        "active_side.png", "active_side.png",
     },
     paramtype = "light",
     inventory_image  = "mines_remote_inactive.png",

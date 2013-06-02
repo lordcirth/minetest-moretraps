@@ -1,8 +1,8 @@
 
 --Remote Bouncing Mine Mod
 
-local MINE_DAMAGE=1 			--the minimum mine damage
-local MINE_VERTICAL_VELOCITY=5	--the speed the mine travels vertically on detonation
+
+local vertical_velocity=5	
 
 --register entities, tools & nodes
 
@@ -17,9 +17,10 @@ MINE_ENTITY={
 minetest.register_entity("remote_bouncing_mine:mine_entity", MINE_ENTITY)
 minetest.register_node("remote_bouncing_mine:mine", {
 	description  = "Remote Bouncing Mine",
-   	    tiles = {"active_mine_top.png", "active_mine_bottom.png",
-        "active_mine_side.png", "active_mine_side.png",
-        "active_mine_side.png", "active_mine_side.png",
+   	    tiles = {
+		"active_top.png", "active_bottom.png",
+        "active_side.png", "active_side.png",
+        "active_side.png", "active_side.png",
     },	
 paramtype = "light",
 	inventory_image  = "inventory_image.png",
@@ -52,7 +53,7 @@ minetest.register_abm({
 								minetest.env:dig_node({x=pos.x,y=pos.y+2,z=pos.z})
 							end
 							local obj=minetest.env:add_entity({x=pos.x,y=pos.y,z=pos.z}, "remote_bouncing_mine:mine_entity")
-							obj:setvelocity({x=0, y=MINE_VERTICAL_VELOCITY, z=0})						  --add the active mine entity to the current position and set it's velocity
+							obj:setvelocity({x=0, y=vertical_velocity, z=0})						  --add the active mine entity to the current position and set it's velocity
 							local obj=minetest.env:dig_node(pos)
 		end
 	end,
@@ -60,8 +61,8 @@ minetest.register_abm({
 
 MINE_ENTITY.on_step = function(self, dtime)
 	self.timer=self.timer+dtime
-	MINE_VERTICAL_VELOCITY=(.4-self.timer)*10
-	self.object:setvelocity({x=0, y=MINE_VERTICAL_VELOCITY, z=0})
+	local velocity=(1-self.timer)*vertical_velocity
+	self.object:setvelocity({x=0, y=velocity, z=0})
 	local pos = self.object:getpos()
 		if self.timer>0.5 then												--if the entity has existed for more than .5 seconds(giving it time to move a couple blocks up into the air) then
 			print ("mine entity causing damage")

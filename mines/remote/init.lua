@@ -1,17 +1,16 @@
 
 local remote_pos = {}
 local range = 30
-local REMOTE_ACTIVATION_TIME = 2
-local COUNTDOWN_TIME = 2
-local MINE_REMOTE_ACTIVE = false
+local remote_countdown = 2
+local countdown = 5
+local remote_active = false
 
-get_distance = function (pos, mine_pos)
+get_distance = function(pos, mine_pos)
 	return math.sqrt((mine_pos.x-pos.x)^2 + (mine_pos.y-pos.y)^2 + (mine_pos.y-pos.y)^2)
 end
 
 got_signal = function (mine_pos)
-	print ("function got_signal called")
-	if MINE_REMOTE_ACTIVE == true then
+	if mine_active == true then
 		if get_distance(remote_pos, mine_pos) < range then
 			return true
 		end
@@ -29,7 +28,6 @@ minetest.register_node("remote:active_remote", {
         "active_remote_side", "active_remote_side",
         "active_remote_side", "active_remote_side",
     },	
-	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
 		fixed = {
@@ -58,9 +56,9 @@ minetest.register_node("remote:remote", {
 		}
 	},
 	on_punch=function(pos)
-		print ("remote activated")
+		print ("remote normal mine is activated by remote")
 		remote_pos = {x=pos.x, y=pos.y, z=pos.z}
-		MINE_REMOTE_ACTIVE = true
+		remote_active = true
 		local node = minetest.env:get_node(pos)
 		node.name = ("remote:active_remote")
 		minetest.env:add_node(pos,node)
@@ -70,28 +68,21 @@ minetest.register_node("remote:remote", {
 --ABM's
 
 minetest.register_abm({
-	nodenames = {"remote:active_remote"},
+	nodenames = {"remote_normal_mine:active_remote"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		if COUNTDOWN_TIME <= 0 then
-			COUNTDOWN_TIME = REMOTE_ACTIVATION_TIME
-			print ("remote is deactivated")
-			MINE_REMOTE_ACTIVE = false
+		if countdown <= 0 then
+			countdown = remote_countdown
+			print ("remote normal mine is deactivated by remote")
+			remote_active = false
 			local node = minetest.env:get_node(pos)
-			node.name = ("remote:remote")
+			node.name = ("remote_normal_mine:inactive_remote")
 			minetest.env:add_node(pos,node)
 
 		else
-			COUNTDOWN_TIME=COUNTDOWN_TIME-1
+			countdown=countdown-1
 		end
-	end,
-	on_punch = function(pos)
-		print ("remote deactivated")
-		MINE_REMOTE_ACTIVE = false
-		local node = minetest.env:get_node(pos)
-		node.name = ("remote:remote")
-		minetest.env:add_node(pos,node)
 	end,
 })
 

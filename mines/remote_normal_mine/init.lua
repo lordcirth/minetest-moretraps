@@ -1,18 +1,12 @@
 --Remote Mine Mod
-MINE_REMOTE_ACTIVE=false
-local REMOTE_ACTIVATION_TIME=2
-local MINE_DAMAGE=1
-local MINE_VERTICAL_VELOCITY=5
-MINE_REMOTE_POSITION_X=0
-MINE_REMOTE_POSITION_Y=0
-MINE_REMOTE_POSITION_Z=0
-MINE_REMOTE_DETECTION_RADIUS=30
+
+
 --register entities, tools & nodes
 minetest.register_node("remote_normal_mine:mine", {
 	description  = "Remote Mine",
-   	    tiles = {"active_mine_top", "active_mine_bottom",
-        "active_mine_side", "active_mine_side",
-        "active_mine_side", "active_mine_side",
+   	    tiles = {"active_top", "active_bottom",
+        "active_side", "active_side",
+        "active_side", "active_side",
     },
 	paramtype = "light",
 	inventory_image = "mines_remote_inactive",
