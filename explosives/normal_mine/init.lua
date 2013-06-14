@@ -2,7 +2,6 @@
 
 local countdown_time = 10
 
-
 minetest.register_craftitem("normal_mine:gunpowder", {
     inventory_image = "throwing_string.png",
 })
