@@ -1,7 +1,4 @@
 --Remote Mine Mod
-
-
---register entities, tools & nodes
 minetest.register_node("remote_normal_mine:mine", {
 	description  = "Remote Mine",
    	    tiles = {
@@ -13,8 +10,8 @@ minetest.register_node("remote_normal_mine:mine", {
 		"active_side.png"
     },
 	paramtype = "light",
-	inventory_image = "mines_remote_inactive",
-   	groups = {cracky=7,oddly_breakable_by_hand=9,flammable=3,explody=0},
+	inventory_image = "remote_normal_mine_inventory_image.png",
+   	groups = {cracky=4, oddly_breakable_by_hand=9, flammable=1, snappy = 1},
 	drawtype = "nodebox",
 	node_box = {
 		type = "fixed",
@@ -24,26 +21,23 @@ minetest.register_node("remote_normal_mine:mine", {
 		}
 	},
 })
-
-
 minetest.register_abm({
 	nodenames = {"remote_normal_mine:mine"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
 		if got_signal(pos)==true then
-			local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)
-			for k, obj in pairs(objs) do				
-				local position = pos
-				local node_name = "remote_normal_mine:mine"
-				local self = not_an_entity
-				explode(position, node_name, self)
-			end
+			local position = pos
+			local node_name = "remote_normal_mine:mine"
+			local self = "not_an_entity"
+			explode(position, node_name, self)
+			minetest.env:dig_node(pos)
+			local node = minetest.env:get_node(pos)
+			node.name = ("fire:basic_flame")
+			minetest.env:add_node(pos,node)
 		end
 	end,
 })
-
---crafting recipes
 minetest.register_craft({
 	output = '"remote_normal_mine:mine" 99',
 	recipe = {
