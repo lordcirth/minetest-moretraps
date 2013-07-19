@@ -1,6 +1,8 @@
 --Bouncing Mine Mod
-local vertical_velocity=3
-local countdown_time=10		
+
+local vertical_velocity=5
+local countdown_time=10	
+	
 MINE_ENTITY={
 	physical = false,
 	timer=0,
@@ -8,7 +10,9 @@ MINE_ENTITY={
 	lastpos={},
 	collisionbox = {0,0,0,0,0,0},
 }
+
 minetest.register_entity("bouncing_mine:mine_entity", MINE_ENTITY)
+
 minetest.register_node("bouncing_mine:mine", {
 	description  = "Bouncing Mine",
     tiles = {
@@ -19,11 +23,6 @@ minetest.register_node("bouncing_mine:mine", {
         "inactive_side.png", 
 		"inactive_side.png"
     },
-   	on_punch = function (pos, node)						 
-    	local meta = minetest.env:get_meta(pos)
-        meta:set_int("Counting_Down", 1)
-		meta:set_int("Time_Until_Activation", countdown_time)
-    end,
 	paramtype = "light",
 	inventory_image  = "bouncing_mine_inventory_image.png",
     groups = {cracky=4, oddly_breakable_by_hand=9, flammable=1, snappy = 1},
@@ -35,7 +34,13 @@ minetest.register_node("bouncing_mine:mine", {
 		{-.1,-.375,-.1,.1,-.2,.1},
 		}
 	},
+   	on_punch = function (pos, node)						 
+    	local meta = minetest.env:get_meta(pos)
+        meta:set_int("Counting_Down", 1)
+		meta:set_int("Time_Until_Activation", countdown_time)
+    end,
 })
+
 minetest.register_node("bouncing_mine:active_mine", {
    	 tiles = {
    	 	"active_top.png", 
@@ -56,7 +61,19 @@ minetest.register_node("bouncing_mine:active_mine", {
 		{-.1,-.375,-.1,.1,-.2,.1},
 		}
 	},
+	on_punch = function (pos)
+		local node_name = "bouncing_mine:active_mine"
+		local self = "not_an_entity"
+		local mine_damage = 1
+		local detection_radius = 5
+		explode(pos, node_name, self, mine_damage, detection_radius)
+		minetest.env:dig_node(pos)
+		local node = minetest.env:get_node(pos)
+		node.name = ("fire:basic_flame")
+		minetest.env:add_node(pos,node)
+	end,
 })
+
 minetest.register_abm({
 	nodenames = {"bouncing_mine:active_mine"},
 	interval = 1,
@@ -74,12 +91,11 @@ minetest.register_abm({
 			local obj=minetest.env:add_entity({x=pos.x,y=pos.y,z=pos.z}, "bouncing_mine:mine_entity")
 			obj:setvelocity({x=0, y=vertical_velocity, z=0})								
 			minetest.env:dig_node(pos)
-			local node = minetest.env:get_node(pos)
-			node.name = ("fire:basic_flame")
-			minetest.env:add_node(pos,node)
+			add_fire(pos)
 		end	
 	end,
 })
+
 minetest.register_abm({
 	nodenames = {"bouncing_mine:mine"},
 	interval = 1,
@@ -97,6 +113,7 @@ minetest.register_abm({
 		end
 	end,
 })
+
 MINE_ENTITY.on_step = function(self, dtime)
 	self.timer=self.timer+dtime
 	local velocity=(1-self.timer)*vertical_velocity
@@ -104,12 +121,13 @@ MINE_ENTITY.on_step = function(self, dtime)
 	local pos = self.object:getpos()
 	if self.timer>0.75 then
 		local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)
-		for k, obj in pairs(objs) do
 		local node_name = "bouncing_mine:active_mine"
-		explode(pos, node_name, self)
-		end
+		local mine_damage = 1
+		local detection_radius = 5
+		explode(pos, node_name, self, mine_damage, detection_radius)
 	end
 end
+
 minetest.register_craft({
 	output = '"bouncing_mine:mine" 1',
 	recipe = {

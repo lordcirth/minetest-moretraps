@@ -1,4 +1,5 @@
 --Remote Mine Mod
+
 minetest.register_node("remote_normal_mine:mine", {
 	description  = "Remote Mine",
    	    tiles = {
@@ -20,7 +21,18 @@ minetest.register_node("remote_normal_mine:mine", {
 		{-.2,-.375,-.2,-.15,.1,-.15},
 		}
 	},
+	on_punch = function (pos)
+		local node_name = "remote_normal_mine:minee"
+		local self = "not_an_entity"
+		local mine_damage = 1
+		local detection_radius = 5
+		explode(pos, node_name, self, mine_damage, detection_radius)
+		local node = minetest.env:get_node(pos)
+		node.name = ("fire:basic_flame")
+		minetest.env:add_node(pos,node)
+	end,
 })
+
 minetest.register_abm({
 	nodenames = {"remote_normal_mine:mine"},
 	interval = 1,
@@ -30,16 +42,16 @@ minetest.register_abm({
 			local position = pos
 			local node_name = "remote_normal_mine:mine"
 			local self = "not_an_entity"
-			explode(position, node_name, self)
+			local mine_damage = 1
+			local detection_radius = 5
+			explode(pos, node_name, self, mine_damage, detection_radius)
 			minetest.env:dig_node(pos)
-			local node = minetest.env:get_node(pos)
-			node.name = ("fire:basic_flame")
-			minetest.env:add_node(pos,node)
 		end
 	end,
 })
+
 minetest.register_craft({
-	output = '"remote_normal_mine:mine" 99',
+	output = '"remote_normal_mine:mine" 1',
 	recipe = {
 		{'', 'default:stick', ''},
 		{'', 'normal_mine:mine', ''},

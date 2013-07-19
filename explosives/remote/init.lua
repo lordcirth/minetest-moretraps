@@ -1,12 +1,15 @@
 --Mine remote
+
 local remote_pos = {}
 local range = 30
 local remote_countdown = 2
 local countdown = 5
 local remote_active = false
+
 get_distance = function(pos, mine_pos)
 	return math.sqrt((mine_pos.x-pos.x)^2 + (mine_pos.y-pos.y)^2 + (mine_pos.y-pos.y)^2)
 end
+
 got_signal = function (mine_pos)
 	if remote_active == true then
 		if get_distance(remote_pos, mine_pos) < range then
@@ -14,10 +17,12 @@ got_signal = function (mine_pos)
 		end
 	end
 end
+
 minetest.register_node("remote:active_remote", {
 	description  = "Mine Remote",
 	groups = {cracky=7,oddly_breakable_by_hand=9,flammable=0,explody=0},
 	paramtype = "light",
+	inventory_image  = "remote_inventory_image.png",
  	tiles = {
 		"remote_active_top.png", 
 		"remote_active_bottom.png",
@@ -36,6 +41,7 @@ minetest.register_node("remote:active_remote", {
 		}
 	},
 })
+
 minetest.register_node("remote:remote", {
 	description  = "Mine Remote",
 	paramtype = "light",
@@ -58,7 +64,6 @@ minetest.register_node("remote:remote", {
 		}
 	},
 	on_punch=function(pos)
-		print ("remote normal mine is activated by remote")
 		remote_pos = {x=pos.x, y=pos.y, z=pos.z}
 		remote_active = true
 		local node = minetest.env:get_node(pos)
@@ -66,6 +71,7 @@ minetest.register_node("remote:remote", {
 		minetest.env:add_node(pos, node)
     end,
 })
+
 minetest.register_abm({
 	nodenames = {"remote:active_remote"},
 	interval = 1,
@@ -83,6 +89,7 @@ minetest.register_abm({
 		end
 	end,
 })
+
 minetest.register_craft({
 	output = '"remote:remote" 1',
 	recipe = {

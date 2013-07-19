@@ -1,8 +1,11 @@
 --Mine Mod
+
 local countdown_time = 10
+
 minetest.register_craftitem("normal_mine:gunpowder", {
 	inventory_image = "gunpowder.png",
 })
+
 minetest.register_node("normal_mine:mine", {
 	description	 = "Mine",
 	drawtype = "nodebox",
@@ -29,6 +32,7 @@ minetest.register_node("normal_mine:mine", {
 		meta:set_int("Time_Until_Activation", countdown_time)
 	end,
 })
+
 minetest.register_node("normal_mine:active_mine", {
 	drawtype = "nodebox",
 	inventory_image	 = "normal_mine_inventory_image.png",
@@ -48,18 +52,31 @@ minetest.register_node("normal_mine:active_mine", {
 		{-.25,-.5,-.25,.25,-.375,.25},
 		}
 	},
+	on_punch = function (pos)
+		local node_name = "normal_mine:active_mine"
+		local self = "not_an_entity"
+		local mine_damage = 1
+		local detection_radius = 5
+		explode(pos, node_name, self, mine_damage, detection_radius)
+		local node = minetest.env:get_node(pos)
+		node.name = ("fire:basic_flame")
+		minetest.env:add_node(pos,node)
+	end,
 })
+
 minetest.register_abm({
 	nodenames = {"normal_mine:active_mine"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)		  					   
 		local node_name = "normal_mine:active_mine"
 		local self = "not_an_entity"
-		explode(pos, node_name, self)
+		local mine_damage = 1
+		local detection_radius = 5
+		explode(pos, node_name, self, mine_damage, detection_radius)
 	end,
 })
+
 minetest.register_abm({
 	nodenames = {"normal_mine:mine"},
 	interval = 1,
@@ -77,6 +94,7 @@ minetest.register_abm({
 		end
 	end,
 })
+
 minetest.register_craft({
 	output = '"normal_mine:mine" 4',
 	recipe = {
@@ -85,6 +103,7 @@ minetest.register_craft({
 		{'', 'default:steel_ingot', ''},
 	}
 })
+
 minetest.register_craft({
 	output = '"normal_mine:gunpowder" 4',
 	recipe = {

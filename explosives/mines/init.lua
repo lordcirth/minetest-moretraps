@@ -1,3 +1,5 @@
+local mine_damage=1 
+local detection_radius = 5
 
 explode = function (pos, node_name, self, mine_damage, detection_radius)
 	local distance_damaging = detection_radius
@@ -14,7 +16,9 @@ explode = function (pos, node_name, self, mine_damage, detection_radius)
 				obj:remove()
 			end
 		end
-		if self ~= "not_an_entity" then
+		if self == "not_an_entity" then
+			add_fire(pos)
+		else
 			self.object:remove()
 		end
 		minetest.env:dig_node(pos)
@@ -43,6 +47,12 @@ check_if_path_clear = function(pos, node_name, player_pos)
             return false
         end
     end
+end
+
+add_fire = function(pos)
+		local node = minetest.env:get_node(pos)
+		node.name = ("fire:basic_flame")
+		minetest.env:add_node(pos,node)
 end
 
 print ("[mines] loaded!")
