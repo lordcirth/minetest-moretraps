@@ -55,4 +55,4 @@ add_fire = function(pos)
 		minetest.env:add_node(pos,node)
 end
 
-print ("[mines] loaded!")
+print ("[mines] loaded.")

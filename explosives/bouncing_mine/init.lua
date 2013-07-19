@@ -119,12 +119,13 @@ MINE_ENTITY.on_step = function(self, dtime)
 	local velocity=(1-self.timer)*vertical_velocity
 	self.object:setvelocity({x=0, y=velocity, z=0})
 	local pos = self.object:getpos()
-	if self.timer>0.75 then
+	if self.timer > 0.75 then
 		local objs = minetest.env:get_objects_inside_radius({x=pos.x,y=pos.y,z=pos.z}, 5)
 		local node_name = "bouncing_mine:active_mine"
 		local mine_damage = 1
 		local detection_radius = 5
 		explode(pos, node_name, self, mine_damage, detection_radius)
+		self.object:remove()
 	end
 end
 
